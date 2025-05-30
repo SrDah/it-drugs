@@ -1,19 +1,11 @@
-local serverFramework = exports.it_bridge:GetServerFramework()
-
 local getCopsAmount = function()
 	local copsAmount = 0
-	local onlinePlayers = exports.it_bridge:GetPlayers()
+	local onlinePlayers = exports.it_bridge:GetOnlinePlayers()
 	if Config.Debug then lib.print.info('Online Players: ', #onlinePlayers) end
 	for i=1, #onlinePlayers do
-		local player = nil
-		local playerId = nil
-		if serverFramework == 'qb-core' or serverFramework == 'es_extended' then
-			player = exports.it_bridge:GetPlayer(onlinePlayers[i])
-		else
-			player = exports.it_bridge:GetPlayer(onlinePlayers[i].source)
-		end
-		if player and playerId then
-			local job = exports.it_bridge:GetPlayerJob(player.source)
+		local currentPlayer = onlinePlayers[i]
+		if currentPlayer then
+			local job = exports.it_bridge:GetPlayerJob(currentPlayer.source)
 			if Config.Debug then lib.print.info('Player', onlinePlayers[i],  'Job: ', job.name) end
 			for _, v in pairs(Config.PoliceJobs) do
 				if job.name == v then
