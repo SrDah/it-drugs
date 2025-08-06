@@ -433,12 +433,12 @@ Config.PoliceJobs = {
 Config.SellSettings = {
     ['onlyAvailableItems'] = true, -- Only offers with drugs the player has in his inventory
     ['sellChance'] = 70, -- Chance to sell drug (in %)
-    ['stealChance'] = 20, -- Chance that the ped dont give you money (in %)
+    ['stealChance'] = 90, -- Chance that the ped dont give you money (in %)
     ['sellAmount'] = { -- Amount of drugs you can sell
         min = 1,
         max = 6,
     },
-    ['sellTimeout'] = 20, -- Max time you get to choose your option (secs)
+    ['sellTimeout'] = 8, -- Max time you get to choose your option (secs)
     ['giveBonusOnPolice'] = true, -- Give bonus money if there is police online | 1-2 Cops : x1.2 | 3-6 Cops : x1.5 | 7-10 Cops : x1.7 | +10 Cops : x2.0
 }
 

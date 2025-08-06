@@ -28,7 +28,7 @@ if not Config.SellEverywhere['enabled'] then
 				if Config.Debug then lib.print.info("Exited Zone ["..k.."]") end
 			end,
 			inside = function()
-				if Config.Debug then lib.print.info("Inside Zone ["..k.."]") end
+				-- if Config.Debug then lib.print.info("Inside Zone ["..k.."]") end
 			end
 		})
 		if Config.Debug then lib.print.info('Zone Created: '..k) end
@@ -47,7 +47,7 @@ CreateThread(function()
 						zone:onEnter()
 						if Config.Debug then lib.print.info("Entered Zone ["..k.."]") end
 					end
-					if Config.Debug then lib.print.info("Inside Zone ["..k.."]") end
+					-- if Config.Debug then lib.print.info("Inside Zone ["..k.."]") end
 				elseif currentZone == k then
 					zone:onExit()
 					currentZone = nil
@@ -86,14 +86,14 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 		return
 	end
 	
-	local isSoldtoPed = HasSoldPed(entity)
+	local isSoldtoPed = HasSoldPed(entity.entity)
 	if isSoldtoPed then
 		ShowNotification(nil, _U('NOTIFICATION__ALLREADY__SPOKE'), 'Error')
 		return
 	end
 
-	SetEntityAsMissionEntity(entity, true, true)
-	TaskTurnPedToFaceEntity(entity, PlayerPedId(), -1)
+	SetEntityAsMissionEntity(entity.entity, true, true)
+	TaskTurnPedToFaceEntity(entity.entity, PlayerPedId(), -1)
 	Wait(500)
 
 	-- seed math random
@@ -102,12 +102,12 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 
 	if sellChance > Config.SellSettings['sellChance'] then
 		ShowNotification(nil, _U('NOTIFICATION__CALLING__COPS'), 'Error')
-		TaskUseMobilePhoneTimed(entity, 8000)
-		SetPedAsNoLongerNeeded(entity)
+		TaskUseMobilePhoneTimed(entity.entity, 8000)
+		SetPedAsNoLongerNeeded(entity.entity)
 		ClearPedTasks(PlayerPedId())
-		AddSoldPed(entity)
+		AddSoldPed(entity.entity)
 
-		local coords = GetEntityCoords(entity)
+		local coords = GetEntityCoords(entity.entity)
 		SendPoliceAlert(coords)
 		return
 	end
@@ -134,7 +134,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 
 		if #availabeItems == 0 then
 			ShowNotification(nil, _U('NOTIFICATION__NO__DRUGS'), 'Error')
-			SetPedAsNoLongerNeeded(entity)
+			SetPedAsNoLongerNeeded(entity.entity)
 			return
 		end
 
@@ -163,7 +163,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 		playerItems = exports.ox_inventory:Search('count', sellItemData.item)
 		if playerItems == 0 then
 			ShowNotification(nil, _U('NOTIFICATION__NO__DRUGS'), 'Error')
-			SetPedAsNoLongerNeeded(entity)
+			SetPedAsNoLongerNeeded(entity.entity)
 			return
 		end
 	end
@@ -179,7 +179,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 			if currentMenu == 'it-drugs-sell-menu' then
 				ShowNotification(nil, _U('NOTIFICATION__TO__LONG'), 'Error')
 				lib.hideContext(false)
-				SetPedAsNoLongerNeeded(entity)
+				SetPedAsNoLongerNeeded(entity.entity)
 			end
 		end
 	end)
@@ -191,10 +191,44 @@ RegisterNetEvent('it-drugs:client:salesInitiate', function(cad)
 	AddSoldPed(cad.tped)
 	if cad.type == 'close' then
 		ShowNotification(nil, _U('NOTIFICATION__OFFER__REJECTED'), 'Error')
-		SetPedAsNoLongerNeeded(cad.tped)
+SetPedAsNoLongerNeeded(cad.tped.entity)
 	else
-		PlayGiveAnim(cad.tped)
+		PlayGiveAnim(cad.tped.entity)
 		TriggerServerEvent('it-drugs:server:initiatedrug', cad)
-		SetPedAsNoLongerNeeded(cad.tped)
+SetPedAsNoLongerNeeded(cad.tped.entity)
 	end
 end)
+
+local stolenPeds = {}
+
+-- Receive data about a ped that stole the player's drugs
+RegisterNetEvent('it-drugs:client:markPedStolen', function(info)
+
+    -- Register the ox_target interaction for when the ped dies
+	print('Ped marked as stolen:', json.encode(info))
+    exports.ox_target:addLocalEntity(info.entity, {
+        name = 'it-drugs:client:stealBack',
+        label = _U('TARGET_STEAL_BACK'),
+        icon = 'fas fa-hand-holding-dollar',
+        canInteract = function(entity)
+            return IsEntityDead(entity)
+        end,
+        onSelect = function(data)
+            local playerPed = PlayerPedId()
+
+            TaskStartScenarioInPlace(playerPed, 'WORLD_HUMAN_STAND_MOBILE', 0, true)
+            Wait(5000)
+            ClearPedTasks(playerPed)
+
+            -- Securely send the ped’s Net ID to the server
+            local pedNetId = data.entity
+			exports.ox_target:removeLocalEntity(info.entity)
+            TriggerServerEvent('it-drugs:server:stealBackDrugs', pedNetId)
+
+            -- Clean up local cache
+            stolenPeds[data.entity] = nil
+			
+        end
+    })
+end)
+

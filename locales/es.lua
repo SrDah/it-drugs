@@ -144,6 +144,10 @@ Locales['es'] = {
     ['NOTIFICATION__SELL__FAIL'] = '¡No has podido vender tus %g!',
     ['NOTIFICATION__NO__ITEM__LEFT'] = '¡No te quedan %g para vender!',
     ['NOTIFICATION__STOLEN__DRUG'] = 'Te han robado y no has conseguido dinero',
+    
+    ['TARGET_STEAL_BACK'] = 'Robar de vuelta',
+    ['NOTIFICATION__RECOVERED__DRUGS'] = 'Has recuperado tus drogas robadas',
+    ['NOTIFICATION__STEAL_BACK_FAIL'] = 'No has podido recuperar tus drogas robadas',
 
     ['NOTIFICATION__DRUG__NO__EFFECT'] = 'Esta droga no tiene efecto',
     ['NOTIFICATION__DRUG__ALREADY'] = 'Ya estás bajo la influencia de una droga.',

@@ -1,3 +1,6 @@
+local stolenDrugs = {}
+
+
 local getCopsAmount = function() -- TODO
 	-- local copsAmount = 0
 	-- local onlinePlayers = exports.it_bridge:GetOnlinePlayers()
@@ -48,6 +51,20 @@ RegisterNetEvent('it-drugs:server:initiatedrug', function(cad)
 				local stealChance = math.random(0, 100)
 				if stealChance < Config.SellSettings['stealChance'] then
 					ShowNotification(src, _U('NOTIFICATION__STOLEN__DRUG'), 'Error')
+					print('Stolen Drugs: ', json.encode(cad))
+					stolenDrugs[src] = stolenDrugs[src] or {}
+					table.insert(stolenDrugs[src], {
+						pedNetId = cad.tped.entity,
+						item = cad.item,
+						amount = cad.amount,
+					})
+					print(json.encode(stolenDrugs[src]))
+					TriggerClientEvent('it-drugs:client:markPedStolen', src, {
+						item = cad.item,
+						amount = cad.amount,
+						entity = cad.tped.entity
+					})
+
 				else
 					local moneyType = 'cash'
 					local rewardItems = nil
@@ -78,6 +95,31 @@ RegisterNetEvent('it-drugs:server:initiatedrug', function(cad)
 		end
 	end
 end)
+
+RegisterNetEvent('it-drugs:server:stealBackDrugs', function(pedNetId)
+    local src = source
+    local pedList = stolenDrugs[src]
+    if not pedList then return end
+
+    for i, entry in ipairs(pedList) do
+        if entry.pedNetId == pedNetId then
+            local success = exports.ox_inventory:AddItem(src, tostring(entry.item), entry.amount)
+            if success then
+                ShowNotification(src, _U('NOTIFICATION__RECOVERED__DRUGS'), 'Success')
+                SendToWebhook(src, 'recovered', nil, {item = entry.item, amount = entry.amount})
+            else
+                ShowNotification(src, _U('NOTIFICATION__STEAL_BACK_FAIL'), 'Error')
+            end
+
+            table.remove(pedList, i) -- prevent duplicate recovery
+            if #pedList == 0 then stolenDrugs[src] = nil end
+            return
+        end
+    end
+
+    ShowNotification(src, _U('NOTIFICATION__STEAL_BACK_FAIL'), 'Error') -- invalid or reused
+end)
+
 
 lib.callback.register('it-drugs:server:getCopsAmount', function(source)
 	return getCopsAmount()
