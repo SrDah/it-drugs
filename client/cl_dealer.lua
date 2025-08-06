@@ -47,7 +47,7 @@ end)
 RegisterNetEvent('it-drugs:client:handleDealerInteraction', function(args)
 
     local item = args.item
-    local itemLabel = exports.it_bridge:GetItemLabel(item)
+    local itemLabel = exports.ox_inventory:Items(item).label
     local dealerId = args.dealerId
     local price = args.price
     local action = args.action

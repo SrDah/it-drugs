@@ -218,7 +218,7 @@ lib.callback.register('it-drugs:server:getTableByOwner', function(source)
     if Config.Debug then lib.print.info('[getTableByOwner] - Try to get Table with Owner:', source) end
 
     local src = source
-    local citId = exports.it_bridge:GetCitizenId(src)
+    local citId = exports.qbx_core:GetPlayer(src).PlayerData.citizenid
 
     local temp = {}
 
@@ -350,18 +350,18 @@ RegisterNetEvent('it-drugs:server:processDrugs', function(data)
     if failChance <= recipe.failChance then
         ShowNotification(source, _U('NOTIFICATION__PROCESS__FAIL'), 'Error')
         for k,v in pairs(recipe.ingrediants) do
-            exports.it_bridge:RemoveItem(source, k, v.amount)
+            exports.ox_inventory:RemoveItem(source, k, v.amount)
         end
         return
     end
 
     for k, v in pairs(recipe.ingrediants) do
         if v.remove then
-            if not exports.it_bridge:RemoveItem(source, k, v.amount) then
+            if not exports.ox_inventory:RemoveItem(source, k, v.amount) then
                 ShowNotification(source, _U('NOTIFICATION__MISSING__INGIDIANT'), 'Error')
                 if #givenItems > 0 then
                     for _, x in pairs(givenItems) do
-                        exports.it_bridge:GiveItem(source, x.name, x.amount)
+                        exports.ox_inventory:AddItem(source, x.name, x.amount)
                     end
                 end
                 return
@@ -373,7 +373,7 @@ RegisterNetEvent('it-drugs:server:processDrugs', function(data)
     SendToWebhook(source, 'table', 'process', processingTable:getData())
     
     for k, v in pairs(recipe.outputs) do
-        exports.it_bridge:GiveItem(source, k, v)
+        exports.ox_inventory:AddItem(source, k, v)
     end
 end)
 
@@ -386,7 +386,7 @@ RegisterNetEvent('it-drugs:server:removeTable', function(args)
 
     if not args.extra then
         if #(GetEntityCoords(GetPlayerPed(source)) - processingTable.coords) > 10 then return end
-        exports.it_bridge:GiveItem(source, processingTable.tableType, 1)
+        exports.ox_inventory:AddItem(source, processingTable.tableType, 1)
     end
 
     MySQL.query('DELETE from drug_processing WHERE id = :id', {
@@ -404,11 +404,11 @@ RegisterNetEvent('it-drugs:server:createNewTable', function(coords, type, rotati
     local src = source
     if #(GetEntityCoords(GetPlayerPed(src)) - coords) > Config.rayCastingDistance + 10 then return end
     
-    if exports.it_bridge:RemoveItem(src, type, 1, metadata) then
+    if exports.ox_inventory:RemoveItem(src, type, 1, metadata) then
 
-        local id = exports.it_bridge:GenerateCustomID(8)
+        local id = GenerateCustomID(8)
         while processingTables[id] do
-            id = exports.it_bridge:GenerateCustomID(8)
+            id = GenerateCustomID(8)
         end
 
         local currentDimension = GetPlayerRoutingBucket(src)
@@ -419,14 +419,14 @@ RegisterNetEvent('it-drugs:server:createNewTable', function(coords, type, rotati
             ['type'] = type,
             ['rotation'] = rotation,
             ['dimension'] = currentDimension,
-            ['owner'] = exports.it_bridge:GetCitizenId(src)
+            ['owner'] = exports.qbx_core:GetPlayer(src).PlayerData.citizenid
         }, function()
             local currentTable = ProcessingTable:new(id, {
                 entity = nil,
                 coords = coords,
                 rotation = rotation,
                 dimension = currentDimension,
-                owner = exports.it_bridge:GetCitizenId(src),
+                owner = exports.qbx_core:GetPlayer(src).PlayerData.citizenid,
                 tableType = type
             })
 

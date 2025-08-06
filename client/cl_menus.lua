@@ -51,8 +51,8 @@ RegisterNetEvent("it-drugs:client:showDealerMenu", function(args)
 
         for k, v in pairs(buyItems) do
             table.insert(options, {
-                title = exports.it_bridge:GetItemLabel(k),
-                description = _U('MENU__DEALER_SELL_ITEM__DESC'):format(exports.it_bridge:GetItemLabel(k), v.price),
+                title = exports.ox_inventory:Items(k).label,
+                description = _U('MENU__DEALER_SELL_ITEM__DESC'):format(exports.ox_inventory:Items(k).label, v.price),
                 icon = "coins",
                 arrow = true,
                 event = "it-drugs:client:handleDealerInteraction",
@@ -66,8 +66,8 @@ RegisterNetEvent("it-drugs:client:showDealerMenu", function(args)
 
         for k, v in pairs(sellItems) do
             table.insert(options, {
-                title = exports.it_bridge:GetItemLabel(k),
-                description = _U('MENU__DEALER_BUY_ITEM__DESC'):format(exports.it_bridge:GetItemLabel(k), v.price),
+                title = exports.ox_inventory:Items(k).label,
+                description = _U('MENU__DEALER_BUY_ITEM__DESC'):format(exports.ox_inventory:Items(k).label, v.price),
                 icon = "coins",
                 arrow = true,
                 event = "it-drugs:client:handleDealerInteraction",
@@ -333,9 +333,9 @@ RegisterNetEvent('it-drugs:client:showItemMenu', function(data)
     local options = {}
     if eventType == 'water' then
         for item, itemData in pairs(Config.Items) do
-            if exports.it_bridge:HasItem(item, 1) and itemData.water ~= 0 then
+            if exports.ox_inventory:Search('count', item) > 0 and itemData.water ~= 0 then
                 table.insert(options, {
-                    title = exports.it_bridge:GetItemLabel(item),
+                    title = exports.ox_inventory:Items(item).label,
                     description = _U('MENU__ITEM__DESC'),
                     metadata = {
                         {label = _U('MENU__PLANT__WATER'), value = itemData.water},
@@ -349,9 +349,9 @@ RegisterNetEvent('it-drugs:client:showItemMenu', function(data)
         end
     elseif eventType == 'fertilizer' then
         for item, itemData in pairs(Config.Items) do
-            if exports.it_bridge:HasItem(item, 1) and itemData.fertilizer ~= 0 then
+            if exports.ox_inventory:Search('count', item) > 0 and itemData.fertilizer ~= 0 then
                 table.insert(options, {
-                    title = exports.it_bridge:GetItemLabel(item),
+                    title = exports.ox_inventory:Items(item).label,
                     description = _U('MENU__ITEM__DESC'),
                     metadata = {
                         {label = _U('MENU__PLANT__WATER'), value = itemData.water},
@@ -455,7 +455,7 @@ RegisterNetEvent("it-drugs:client:showProcessingMenu", function(data)
     else
         for k, v in pairs(recipe.ingrediants) do
             table.insert(options, {
-                title = exports.it_bridge:GetItemLabel(k),
+                title = exports.ox_inventory:Items(k).label,
                 description = _U('MENU__INGREDIANT__DESC'):format(v.amount), --:replace("{amount}", v),
                 icon = "flask",
             })
@@ -503,7 +503,7 @@ RegisterNetEvent("it-drugs:client:showSellMenu", function(data)
     local ped = data.entity
     local rewardItems = data.rewardItems
 
-    local itemLabel = exports.it_bridge:GetItemLabel(item)
+    local itemLabel = exports.ox_inventory:Items(item).label
 
 
     local options = {}
@@ -528,7 +528,7 @@ RegisterNetEvent("it-drugs:client:showSellMenu", function(data)
         })
         for _, itemData in pairs(rewardItems) do
             table.insert(options, {
-                title = exports.it_bridge:GetItemLabel(itemData.name),
+                title = exports.ox_inventory:Items(itemData.name).label,
                 description = _U('MENU__SELL_REWARD_DESC'):format(itemData.amount * amount),
                 icon = "coins",
             })

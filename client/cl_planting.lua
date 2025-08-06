@@ -119,7 +119,7 @@ local function plantSeed(ped, plant, plantInfos, plantItem, coords, metadata)
     if plantInfos.reqItems and plantInfos.reqItems["planting"] ~= nil then
         for item, itemData in pairs(plantInfos.reqItems["planting"]) do
             if Config.Debug then lib.print.info('Checking for item: ' .. item) end -- DEBUG
-            if not exports.it_bridge:HasItem(item, itemData.amount or 1) then
+            if exports.ox_inventory:Search('count', item) < (itemData.amount or 1) then
                 ShowNotification(nil, _U('NOTIFICATION__NO__ITEMS'), "Error")
                 DeleteObject(plant)
                 TriggerEvent('it-drugs:client:syncRestLoop', false)
@@ -208,7 +208,7 @@ RegisterNetEvent('it-drugs:client:useSeed', function(plantItem, metadata)
     RequestModel(hashModel)
     while not HasModelLoaded(hashModel) do Wait(0) end
 
-    exports.it_bridge:ShowTextUI(_U('INTERACTION__PLACING__TEXT'), {
+    ShowTextUI(_U('INTERACTION__PLACING__TEXT'), {
         position = "left",
         icon = "cannabis",
         color = "info",
@@ -235,7 +235,7 @@ RegisterNetEvent('it-drugs:client:useSeed', function(plantItem, metadata)
             if IsControlJustPressed(0, 38) then
                 if Config.Debug then lib.print.info('Control 38 pressed') end -- DEBUG 
                 planted = true
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
 
                 plantSeed(ped, plant, plantInfos, plantItem, dest, metadata)
                 return
@@ -244,7 +244,7 @@ RegisterNetEvent('it-drugs:client:useSeed', function(plantItem, metadata)
             -- [G] To destroy plant
             if IsControlJustPressed(0, 47) then
                 if Config.Debug then lib.print.info('Control 47 pressed') end -- DEBUG
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
                 planted = true
                 DeleteObject(plant)
                 return
@@ -260,13 +260,13 @@ RegisterNetEvent('it-drugs:client:useSeed', function(plantItem, metadata)
                 planted = true
                 local coords = GetEntityCoords(plant)
                 plantSeed(ped, plant, plantInfos, plantItem, vector3(coords.x, coords.y, coords.z + (math.abs(customOffset))), metadata)
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
                 return
             end
             if IsControlJustPressed(0, 47) then
                 if Config.Debug then lib.print.info('Control 47 pressed') end -- DEBUG
                 planted = true
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING__TEXT'))
                 DeleteObject(plant)
                 TriggerEvent('it-drugs:client:syncRestLoop', false)
                 return
@@ -285,7 +285,7 @@ RegisterNetEvent('it-drugs:client:harvestPlant', function(args)
     if plantData.reqItems and plantData.reqItems["harvesting"] ~= nil then
         for item, itemData in pairs(plantData.reqItems["harvesting"]) do
             if Config.Debug then lib.print.info('Checking for item: ' .. item) end -- DEBUG
-            if not exports.it_bridge:HasItem(item, itemData.amount or 1) then
+            if exports.ox_inventory:Search('count', item) < (itemData.amount or 1) then
                 ShowNotification(nil, _U('NOTIFICATION__NO__ITEMS'), "Error")
                 TriggerEvent('it-drugs:client:syncRestLoop', false)
                 return
@@ -422,7 +422,7 @@ end
 RegisterNetEvent('it-drugs:client:useItem', function (args)
     local item = args.item
 
-    if not exports.it_bridge:HasItem(item, 1) then
+    if exports.ox_inventory:Search('count', item) < 1  then 
         ShowNotification(nil, _U('NOTIFICATION__NO__ITEMS'), "Error")
         return
     end
@@ -437,7 +437,7 @@ RegisterNetEvent('it-drugs:client:useItem', function (args)
 end)
 
 RegisterNetEvent('it-drugs:client:destroyPlant', function(args)
-    if Config.ItemToDestroyPlant and not exports.it_bridge:HasItem(Config.DestroyItemName, 1) then
+    if Config.ItemToDestroyPlant and exports.ox_inventory:Search('count', Config.DestroyItemName) < 1 then
         ShowNotification(nil, _U('NOTIFICATION__NEED_LIGHTER'), "Error")
         TriggerEvent('it-drugs:client:syncRestLoop', false)
         return

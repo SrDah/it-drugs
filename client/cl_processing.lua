@@ -76,7 +76,7 @@ RegisterNetEvent('it-drugs:client:placeProcessingTable', function(tableItem, met
     RequestModel(hashModel)
     while not HasModelLoaded(hashModel) do Wait(0) end
 
-    exports.it_bridge:ShowTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'), {
+    ShowTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'), {
         position = 'left',
         icon = 'fa-info',
         color = 'info',
@@ -120,7 +120,7 @@ RegisterNetEvent('it-drugs:client:placeProcessingTable', function(tableItem, met
 
             if IsControlJustPressed(0, 38) then
                 placed = true
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
 
                 DeleteObject(table)
                 placeProcessingTable(ped, tableItem, dest, rotation, metadata)
@@ -129,7 +129,7 @@ RegisterNetEvent('it-drugs:client:placeProcessingTable', function(tableItem, met
 
             if IsControlJustPressed(0, 47) then
                 placed = true
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
                 DeleteObject(table)
                 TriggerEvent('it-drugs:client:syncRestLoop', false)
                 return
@@ -146,7 +146,7 @@ RegisterNetEvent('it-drugs:client:placeProcessingTable', function(tableItem, met
             if IsControlJustPressed(0, 38) then
                 placed = true
                 local coords = GetEntityCoords(table)
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
                 DeleteObject(table)
                 placeProcessingTable(ped, tableItem, coords, heading, metadata)
                 return
@@ -154,7 +154,7 @@ RegisterNetEvent('it-drugs:client:placeProcessingTable', function(tableItem, met
 
             if IsControlJustPressed(0, 47) then
                 placed = true
-                exports.it_bridge:CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
+                CloseTextUI(_U('INTERACTION__PLACING_TABLE__TEXT'))
                 DeleteObject(table)
                 TriggerEvent('it-drugs:client:syncRestLoop', false)
                 return
@@ -180,7 +180,7 @@ RegisterNetEvent('it-drugs:client:processDrugs', function(args)
 
     local amount = tonumber(input[1])
     for item, itemData in pairs(recipe.ingrediants) do
-        if not exports.it_bridge:HasItem(item, itemData.amount * amount) then
+        if exports.ox_inventory:Search('count', item) < itemData.amount * amount then
             ShowNotification(nil, _U('NOTIFICATION__MISSING__INGIDIANT'), 'Error')
             proccessing = false
             TriggerEvent('it-drugs:client:syncRestLoop', false)

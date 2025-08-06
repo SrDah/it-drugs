@@ -9,6 +9,26 @@ local plants = {}
 --- @field id string
 Plant = lib.class('Plant')
 
+
+function GenerateUUID()
+    local random = math.random
+    local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    return string.gsub(template, '[xy]', function (c)
+        local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
+        return string.format('%x', v)
+    end)
+end
+
+function GenerateCustomID(length)
+    if length == nil then length = 8 end
+    if length == 36 then return GenerateUUID() end
+    if length > 36 then length = 36 end
+    local randomId = GenerateUUID()
+    lib.print.debug('[GenerateCustomID] - Generated ID:', string.sub(randomId, 1, length))
+    return string.sub(randomId, 1, length)
+end
+
+
 --- Plant constructor
 ---@param id string
 ---@param plantData table
@@ -288,10 +308,10 @@ lib.callback.register('it-drugs:server:getPlantByOwner', function(source)
     ---@type number: the player citizen ID
     local src = source
     ---@type number: the player citizen ID 
-    local citId = exports.it_bridge:GetCitizenId(src)
+    local citId = exports.qbx_core:GetPlayer(src).PlayerData.citizenid
     ---@type table: the temporary table to store the plants
     local temp = {}
-
+    if Config.Debug then lib.print.info('[getPlantsOwned] - Player Citizen ID:', citId) end
     -- Loop through all the plants and check if the player owns them
     for k, v in pairs(plants) do
         if v.owner == citId then
@@ -511,18 +531,18 @@ RegisterNetEvent('it-drugs:server:createNewPlant', function(coords, plantItem, z
         local givenItems = {}
         for item, itemData in pairs(plantInfos.reqItems["planting"]) do
             if Config.Debug then lib.print.info('Checking for item: ' .. item) end -- DEBUG
-            if not exports.it_bridge:HasItem(source, item, itemData.amount or 1) then
+            if exports.ox_inventory:GetItemCount(source, item) < (itemData.amount or 1) then
                 ShowNotification(nil, _U('NOTIFICATION__NO__ITEMS'), "Error")
 
                 if #givenItems > 0 then
                     for _, item in pairs(givenItems) do
-                        exports.it_bridge:GiveItem(source, item)
+                        exports.ox_inventory:AddItem(source, item, 1)
                     end
                 end
                 return
             else
                 if itemData.remove then
-                    if exports.it_bridge:RemoveItem(source, item, itemData.amount or 1) then
+                    if exports.ox_inventory:RemoveItem(source, item, itemData.amount or 1) then
                         table.insert(givenItems, item)
                     end
                 end
@@ -530,9 +550,9 @@ RegisterNetEvent('it-drugs:server:createNewPlant', function(coords, plantItem, z
         end
     end
 
-    if exports.it_bridge:RemoveItem(src, plantItem, 1, metadata) then
+    if exports.ox_inventory:RemoveItem(src, plantItem, 1, metadata) then
         local time = os.time()
-        local owner = exports.it_bridge:GetCitizenId(src)
+        local owner = exports.qbx_core:GetPlayer(src).PlayerData.citizenid
 
         local growTime = Config.GlobalGrowTime
         if plantInfos.growthTime then
@@ -542,9 +562,9 @@ RegisterNetEvent('it-drugs:server:createNewPlant', function(coords, plantItem, z
             growTime = (growTime / Config.Zones[zone].growMultiplier)
         end
 
-        local id = exports.it_bridge:GenerateCustomID(8)
+        local id = GenerateCustomID(8)
         while plants[id] do
-            id = exports.it_bridge:GenerateCustomID(8)
+            id = GenerateCustomID(8)
         end
 
         local currentDimension = GetPlayerRoutingBucket(src)
@@ -593,7 +613,7 @@ RegisterNetEvent('it-drugs:server:plantTakeCare', function(plantId, item)
     local src = source
     if #(GetEntityCoords(GetPlayerPed(src)) - plantData.coords) > 10 then return end
 
-    if exports.it_bridge:RemoveItem(src, item, 1) then
+    if exports.ox_inventory:RemoveItem(src, item, 1) then
         local itemData = Config.Items[item]
         if itemData.water ~= 0 then
             local itemStrength = itemData.water
@@ -631,7 +651,7 @@ RegisterNetEvent('it-drugs:server:plantTakeCare', function(plantId, item)
             SendToWebhook(src, 'plant', 'fertilize', plantData)
         end
         if itemData.itemBack ~= nil then
-            exports.it_bridge:GiveItem(src, itemData.itemBack, 1)
+            exports.ox_inventory:AddItem(src, itemData.itemBack, 1)
         end
     end
 end)
@@ -654,18 +674,18 @@ RegisterNetEvent('it-drugs:server:harvestPlant', function(plantId)
         local givenItems = {}
         for item, itemData in pairs(extendedPlantData.reqItems["harvesting"]) do
             if Config.Debug then lib.print.info('Checking for item: ' .. item) end -- DEBUG
-            if not exports.it_bridge:HasItem(source, item, itemData.amount or 1) then
+            if exports.ox_inventory:GetItemCount(source, item) < (itemData.amount or 1) then
                 ShowNotification(nil, _U('NOTIFICATION__NO__ITEMS'), "Error")
 
                 if #givenItems > 0 then
                     for _, item in pairs(givenItems) do
-                        exports.it_bridge:GiveItem(source, item)
+                        exports.ox_inventory:AddItem(source, item, 1)
                     end
                 end
                 return
             else
                 if itemData.remove then
-                    if exports.it_bridge:RemoveItem(source, item, itemData.amount or 1) then
+                    if exports.ox_inventory:RemoveItem(source, item, itemData.amount or 1) then
                         table.insert(givenItems, item)
                     end
                 end
@@ -679,14 +699,14 @@ RegisterNetEvent('it-drugs:server:harvestPlant', function(plantId)
             local minAmount = v.min
             local maxAmount = v.max
             local amount = math.random(minAmount, maxAmount)
-            exports.it_bridge:GiveItem(src, product, amount)
+            exports.ox_inventory:AddItem(src, product, amount)
         end
         if math.random(1, 100) <= Config.Plants[plantData.seed].seed.chance then
             local seed = plantData.type
 
             if Config.Plants[plantData.seed].seed.max > 1 then
                 local seedAmount = math.random(Config.Plants[plantData.seed].seed.min, Config.Plants[plantData.seed].seed.max)
-                exports.it_bridge:GiveItem(src, plantData.seed, seedAmount)
+                exports.ox_inventory:AddItem(src, plantData.seed, seedAmount)
             end
         end
   

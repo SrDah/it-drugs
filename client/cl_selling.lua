@@ -127,7 +127,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 	if Config.SellSettings['onlyAvailableItems'] then
 		local availabeItems = {}
 		for itemName, itemData in pairs(zoneConfig.drugs) do
-			if exports.it_bridge:HasItem(itemName)then
+			if exports.ox_inventory:Search('count', itemName) > 0 then
 				table.insert(availabeItems, {item = itemName, price = itemData.price, moneyType = itemData.moneyType, rewardItems = itemData.rewardItems})
 			end
 		end
@@ -141,7 +141,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 		-- seed math random
 		math.randomseed(GetGameTimer())
 		sellItemData = availabeItems[math.random(1, #availabeItems)]
-		playerItems = exports.it_bridge:GetItemCount(sellItemData.item)
+		playerItems = exports.ox_inventory:Search('count', sellItemData.item)
 	else
 		-- Function to get a random key from a table
 		local function getRandomTableKey(tbl)
@@ -160,7 +160,7 @@ RegisterNetEvent('it-drugs:client:checkSellOffer', function(entity)
 			rewardItems = zoneConfig.drugs[randomDrugKey].rewardItems
 		}
 
-		playerItems = exports.it_bridge:GetItemCount(sellItemData.item)
+		playerItems = exports.ox_inventory:Search('count', sellItemData.item)
 		if playerItems == 0 then
 			ShowNotification(nil, _U('NOTIFICATION__NO__DRUGS'), 'Error')
 			SetPedAsNoLongerNeeded(entity)

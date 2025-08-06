@@ -1,5 +1,5 @@
-lib.print.info('GetServerInteraction', exports.it_bridge:GetServerInteraction())
-if not exports.it_bridge:GetServerInteraction() then return end
+lib.print.info('GetServerInteraction', 'ox_target')
+
 
 local plantOptions = nil
 local tableOptions = nil
@@ -15,13 +15,13 @@ local sellOptions = nil
 -- └────────────────────────────────────────────────────────┘
 for _, v in pairs(Config.PlantTypes) do
     for _, plant in pairs(v) do
-        plantOptions = exports.it_bridge:AddTargetModel(plant[1], {
+        plantOptions = exports.ox_target:addModel(plant[1], {
             {
                 label = _U('TARGET__PLANT__LABEL'),
                 name = 'it-drugs-check-plant',
                 icon = 'fas fa-eye',
-                onSelect = function(entity)
-                    local networkId = NetworkGetNetworkIdFromEntity(entity)
+                onSelect = function(data)
+                    local networkId = NetworkGetNetworkIdFromEntity(data.entity)
                     lib.callback("it-drugs:server:getPlantByNetId", false, function(plantData)
                         if not plantData then
                             lib.print.error('[it-drugs] Unable to get plant data by network id')
@@ -46,7 +46,7 @@ end
 local function createDealerTargets()
     for k, v in pairs(Config.DrugDealers) do
         if v.ped ~= nil then
-            dealerOptions = exports.it_bridge:AddTargetModel(v.ped, {
+            dealerOptions = exports.ox_target:addModel(v.ped, {
                 {
                     label = _U('TARGET__DEALER__LABLE'),
                     name = 'it-drugs-talk-dealer',
@@ -76,13 +76,13 @@ end
 local function createProccessingTargets()
     for _, v in pairs(Config.ProcessingTables) do
         if v.model ~= nil then
-            tableOptions = exports.it_bridge:AddTargetModel(v.model, {
+            tableOptions = exports.ox_target:addModel(v.model, {
                 {
                     label = _U('TARGET__TABLE__LABEL'),
                     name = 'it-drugs-use-table',
                     icon = 'fas fa-eye',
-                    onSelect = function(entity)
-                        local networkId = NetworkGetNetworkIdFromEntity(entity)
+                    onSelect = function(data)
+                        local networkId = NetworkGetNetworkIdFromEntity(data.entity)
                         lib.callback("it-drugs:server:getTableByNetId", false, function(tableData)
                             if not tableData then
                                 lib.print.error('[it-drugs] Unable to get table data by network id')
@@ -123,7 +123,7 @@ end
 -- │                        |___/                 |___/          │
 -- └─────────────────────────────────────────────────────────────┘
 function CreateSellingTargets()
-    sellOptions = exports.it_bridge:AddGlobalPed({
+    sellOptions = exports.ox_target:addGlobalPed({
         {
             label = _U('TARGET__SELL__LABEL'),
             name = 'it-drugs-sell',
@@ -160,7 +160,7 @@ if Config.EnableSelling and Config.SellEverywhere['enabled'] then
 end
 
 RemoveSellTarget = function()
-    exports.it_bridge:RemoveGlobalPed(sellOptions)
+    exports.ox_target:removeGlobalPed(sellOptions)
 end
 
 -- Remove all Targets
@@ -168,7 +168,7 @@ AddEventHandler('onResourceStop', function(resource)
     if resource ~= GetCurrentResourceName() then return end
     for _, v in pairs(Config.PlantTypes) do
         for _, plant in pairs(v) do
-            exports.it_bridge:RemoveTargetModel(plant[1], plantOptions)
+            exports.ox_target:removeModel(plant[1], plantOptions)
             
         end
     end
@@ -176,7 +176,7 @@ AddEventHandler('onResourceStop', function(resource)
     if Config.EnableProcessing then
         for _, v in pairs(Config.ProcessingTables) do
             if v.model ~= nil then
-                exports.it_bridge:RemoveTargetModel(v.model, tableOptions)
+                exports.ox_target:removeModel(v.model, tableOptions)
             end
         end
     end
@@ -184,7 +184,7 @@ AddEventHandler('onResourceStop', function(resource)
     if Config.EnableDealers then
         for k, v in pairs(Config.DrugDealers) do
             if v.ped ~= nil then
-                exports.it_bridge:RemoveTargetModel(v.ped, dealerOptions)
+                exports.ox_target:removeModel(v.ped, dealerOptions)
             end
         end
     end

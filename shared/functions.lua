@@ -14,24 +14,39 @@ function SendPoliceAlert(coords)
     })
 end
 
+function ShowTextUI(message, options)
+    lib.showTextUI(message, {
+        position = options.position or "left",
+        icon = options.icon or "cannabis",
+        color = options.color or "info",
+    })
+end
+
+function CloseTextUI(message)
+    local isOpen, text = lib.isTextUIOpen()
+    if isOpen and text == message then
+        lib.hideTextUI()
+    end
+end
+
 function ShowNotification(source, message, type)
     -- Bridge.Functions.Notify(message, type) are the default Framework notifications
     -- You can change this to your own notification systems
     if source ~= nil then -- Server Messages
         if type == 'Error' then
-            exports.it_bridge:SendNotification(source, 'it-drugs', message, 5000, "Error", true)
+            exports.qbx_core:Notify(source, 'Drogas', 'error', 5000, message)
         elseif type == 'Success' then
-            exports.it_bridge:SendNotification(source, 'it-drugs', message, 5000, "Success", true)
+            exports.qbx_core:Notify(source, 'Drogas', 'success', 5000, message)
         else
-            exports.it_bridge:SendNotification(source, 'it-drugs', message, 5000, "Info", false)
+            exports.qbx_core:Notify(source, 'Drogas', 'inform', 5000, message)
         end
     else -- Client Messages
         if type == 'Error' then
-            exports.it_bridge:SendNotification('it-drugs', message, 5000, "Error", true)
+            exports.qbx_core:Notify('Drogas', 'error', 5000, message)
         elseif type == 'Success' then
-            exports.it_bridge:SendNotification('it-drugs', message, 5000, "Success", true)
+            exports.qbx_core:Notify('Drogas', 'success', 5000, message)
         else
-            exports.it_bridge:SendNotification('it-drugs', message, 5000, "Info", false)
+            exports.qbx_core:Notify('Drogas', 'inform', 5000, message)
         end
     end
 end
@@ -82,6 +97,7 @@ end
 
 --- Regenerates player food
 function FoodRegen()
+    print('Food Regen')
     -- QBCore Example
     -- TriggerEvent("QBCore:Server:SetMetaData", "hunger", 40000)
     --TriggerEvent("QBCore:Server:SetMetaData", "thirst", 20000)

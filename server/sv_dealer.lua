@@ -130,11 +130,9 @@ RegisterNetEvent('it-drugs:server:sellItemsToDealer', function (dealerID, item, 
         return
     end
 
-    if exports.it_bridge:HasItem(src, item, amount) then
-        if exports.it_bridge:RemoveItem(src, item, amount) then
-            exports.it_bridge:AddMoney(src, buyItemData.moneyType, total)
-            ShowNotification(src, _U('NOTIFICATION__DEALER__SELL__SUCCESS'):format(amount, exports.it_bridge:GetItemLabel(item), total), 'success')
-        end
+    if exports.ox_inventory:RemoveItem(src, item, amount) then
+        exports.qbx_core:AddMoney(src, buyItemData.moneyType, total )
+        ShowNotification(src, _U('NOTIFICATION__DEALER__SELL__SUCCESS'):format(amount, exports.ox_inventory:Items(item).label, total), 'success')
     else
         ShowNotification(src, _U('NOTIFICATION__DEALER__NO__ITEM'), 'Error')
     end
@@ -157,14 +155,14 @@ RegisterNetEvent('it-drugs:server:buyItemsFromDealer', function(dealerID, item, 
         return
     end
 
-    if exports.it_bridge:GetMoney(src, sellItemData.moneyType) < total then
+    if exports.qbx_core:GetMoney(src, sellItemData.moneyType) < total then
         ShowNotification(src, _U('NOTIFICATION__NO__MONEY'), 'Error')
         return
     end
 
-    if exports.it_bridge:RemoveMoney(src, sellItemData.moneyType, total) then
-        exports.it_bridge:GiveItem(src, item, amount)
-        ShowNotification(src, _U('NOTIFICATION__DEALER__BUY__SUCCESS'):format(amount, exports.it_bridge:GetItemLabel(item), total), 'Success')
+    if exports.qbx_core:RemoveMoney(src, sellItemData.moneyType, total) then
+        exports.ox_inventory:AddItem(src, item, amount)
+        ShowNotification(src, _U('NOTIFICATION__DEALER__BUY__SUCCESS'):format(amount, exports.ox_inventory:Items(item).label, total), 'Success')
     end
 
     TriggerClientEvent('it-drugs:client:syncRestLoop', source, false)

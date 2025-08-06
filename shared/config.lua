@@ -15,7 +15,7 @@ Locales = Locales or {}
     Feel free to share them with us so we can add them to the script for everyone to use.
 ]]
 
-Config.Language = 'en' -- Choose your language from the locales folder
+Config.Language = 'es' -- Choose your language from the locales folder
 
 
 --[[
@@ -577,5 +577,5 @@ Config.ManualDatabaseSetup = false -- Set to true to disable the automatic datab
 
 Config.EnableVersionCheck = true -- Enable version check
 Config.Branch = 'main' -- Set to 'master' to use the master branch, set to 'development' to use the dev branch
-Config.Debug = false -- Set to true to enable debug mode
-Config.DebugPoly = false -- Set to true to enable debug mode for PolyZone
+Config.Debug = true -- Set to true to enable debug mode
+Config.DebugPoly = true -- Set to true to enable debug mode for PolyZone

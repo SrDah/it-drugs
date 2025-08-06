@@ -116,7 +116,7 @@ data_file 'DLC_ITYP_REQUEST' 'stream/an_weed_blue+hi.ytd'
 dependencies {
     'ox_lib',
     'oxmysql',
-    'it_bridge'
+    -- 'it_bridge'
 }
 
 lua54 'yes'
